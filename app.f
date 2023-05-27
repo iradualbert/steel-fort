@@ -15,7 +15,7 @@ c              close(17)
 c     Ix(d,tw,r,h,bf,tf)=2*((bf*tf**3)/12+(bf*tf*(d-tf)**2/4))+tw*(d-2*) ! Gave up on this formula as it was exceed the line length requirements
 c      Iy(d,tw,r,h,bf,tf)=
 
-      Ix(d,tw,r,h,bf,tf) = (bf*d**3 - (bf - tw)*(d - 2*tf)**3) / 12   ! formula for calculation the moment of inertia along the x - axis
+      Ix(d,tw,r,h,bf,tf) = (bf*d**3 - (bf - tw)*(d - 2*tf)**3) / 12   ! formula for calculating the moment of inertia along the x - axis
       Iy(d,tw,r,h,bf,tf) = (2*tf*bf**3 + (d - 2*t)*tw**3) / 12
       
 c     Radius of Gyration
