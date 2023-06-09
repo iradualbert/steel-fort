@@ -7,7 +7,7 @@
         logical :: isFound
         
         ! open file
-        open(10, file="HI_profiles.csv", status="old")
+        open(10, file="HI_profiles.csv", status="old", action="read")
 
         write(*,3)
 3       format(//,20x,"************WELCOME************")
