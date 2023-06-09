@@ -1,7 +1,8 @@
 app.exe
 main.py
 .f95
-.exe
+*.exe
 .xlsx
 
 /.vs
+*~

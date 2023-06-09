@@ -42,10 +42,10 @@
         ! Read and seach for the profile entered by the user
         isFound = .false.
         do i=1, 6
-           read(10, *)name, d,tw,r,h,bf,tf
+           read(10, *)name,  d,b,tw,tf,r,h
            if(trim(name) == trim(input)) then
               isFound = .true.
-              write(*,*)name, d,tw,r,h,bf,tf
+              write(*,*)name, d,b,tw,tf,r,h
               exit ! exit the loop if the the profile is found
            end if
         end do
@@ -75,10 +75,6 @@
         Cy = calculate_Cy(d,tw,r,h,b,tf)  !Centroid y
         write(*,30) Cy
   30    format(/,6(f20.3,2x))
-  
-        !The functions for I and H sections
-c     Ax(d,tw,r,h,b,tf)=(tw*h**3)/12+2((b*tw**3)+3*(tw*b*(h+tf)**2))/12) !moment area strong axis
-c     Az(d,tw,r,h,b,tf)=(h*tw**3)/12 + 2((tf*b**3)/12) !moment area weak axis
 
 
       contains
