@@ -5,4 +5,5 @@ main.py
 .xlsx
 
 /.vs
-*~
+app.~f
+~app.f
