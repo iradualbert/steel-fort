@@ -1,13 +1,14 @@
         program App_Steel
         real :: pi
-        real :: d, tw, r, h, b, tf, z
+        real :: d, tw, r, h, b, tf
+        real :: X, Z, Area, Rg, SMx, SMz, Cx, Cy !properties to be calculated
         character(len=10) name
         character(len=10) input
-        character(len=20)  :: searchName
+        character(len=20)  searchName
         logical :: isFound
+        character(len=10) profileType
         
-        ! open file
-        open(10, file="HI_profiles.csv", status="old", action="read")
+
 
         write(*,3)
 3       format(//,20x,"************WELCOME************")
@@ -34,52 +35,69 @@
         write(*,7)
 7       format(/,16x, "Or type INSERT to enter measurements")
 20      format(/,(20x,6(f6.2,2x)))
-        read(*,*)input
+21       read(*,*)input
         
+        profileType = input(1:1)
+
+        if(profileType=="H")then
+        ! open file
+        open(10, file="HI_profiles.csv", status="old")
         ! ignore the header line
         read(10, *)
-        
-        ! Read and seach for the profile entered by the user
+        ! Read and search for the profile entered by the user
         isFound = .false.
         do i=1, 6
-           read(10, *)name, d,tw,r,h,bf,tf
+           read(10, *)name,  d,b,tw,tf,r,h
            if(trim(name) == trim(input)) then
               isFound = .true.
-              write(*,*)name, d,tw,r,h,bf,tf
               exit ! exit the loop if the the profile is found
            end if
         end do
-        
-  
-        x = calculate_Ax(d,tw,r,h,b,tf)   !Ixx
-        write(*,22) x
-  22    format(/,6(f20.3,2x))
-        z = calculate_Az(d,tw,r,h,b,tf)    !Izz
-        write(*,23) z
-  23    format(/,6(f20.3,2x))
-        Ar = calculate_Area(d,tw,r,h,b,tf)  !Area
-        write(*,25) Ar
-  25    format(/,6(f20.3,2x))
+        close(10)
+        if(.not. isFound) then
+             write(*,*) "Oops, that profile couldn't be found."
+             go to 21
+        end if
+        X = calculate_Ax(d,tw,r,h,b,tf)   !Ixx
+        Z = calculate_Az(d,tw,r,h,b,tf)    !Izz
+        Area = calculate_Area(d,tw,r,h,b,tf)  !Area
         Rg = calculate_Rg(d,tw,r,h,b,tf)  !Radius of Gyration
+        SMx = calculate_SMx(d,tw,r,h,b,tf)  !Section Modulus x
+        SMz = calculate_SMz(d,tw,r,h,b,tf)  !Section Modulus y
+        Cx = calculate_Cx(d,tw,r,h,b,tf)  !Centroid X
+        Cy = calculate_Cy(d,tw,r,h,b,tf)  !Centroid y
+        
+        else if(profileType=="C") then
+            write(*,*) "We are still working on C Profiles"
+        else
+            write(*,*) "Invalid Profile"
+        endif
+
+
+
+
+
+
+        
+        write(*,22) X
+  22    format(/,6(f20.3,2x))
+        write(*,23) Z
+  23    format(/,6(f20.3,2x))
+        write(*,25) Area
+  25    format(/,6(f20.3,2x))
         write(*,26) Rg
   26    format(/,6(f20.3,2x))
-        SMx = calculate_SMx(d,tw,r,h,b,tf)  !Section Modulus x
         write(*,27) SMx
   27    format(/,6(f20.3,2x))
-        SMz = calculate_SMz(d,tw,r,h,b,tf)  !Section Modulus y
         write(*,28) SMz
   28    format(/,6(f20.3,2x))
-        Cx = calculate_Cx(d,tw,r,h,b,tf)  !Centroid X
         write(*,29) Cx
   29    format(/,6(f20.3,2x))
         Cy = calculate_Cy(d,tw,r,h,b,tf)  !Centroid y
         write(*,30) Cy
   30    format(/,6(f20.3,2x))
   
-        !The functions for I and H sections
-c     Ax(d,tw,r,h,b,tf)=(tw*h**3)/12+2((b*tw**3)+3*(tw*b*(h+tf)**2))/12) !moment area strong axis
-c     Az(d,tw,r,h,b,tf)=(h*tw**3)/12 + 2((tf*b**3)/12) !moment area weak axis
-
+        go to 21 ! start again
 
       contains
 
@@ -125,5 +143,3 @@ c     Az(d,tw,r,h,b,tf)=(h*tw**3)/12 + 2((tf*b**3)/12) !moment area weak axis
       end function calculate_Cy
       
       end program
-      
-
