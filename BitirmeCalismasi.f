@@ -2,6 +2,7 @@
         real :: pi
         real :: d, tw, r, h, b, tf
         real :: X, Z, Area, Rgx, Rgy, SMx, SMz, Cx, Cy, Pmx,Pmy !properties to be calculated
+
         logical :: isFound
         character(len=6)  c,l
         character(len=10) input
@@ -85,6 +86,7 @@
         Area = calculate_Ar2(d,tw,r,h,b,tf)  !Area
         Rgx = calculate_Rg2x(d,tw,r,h,b,tf)  !Radius of Gyration X
         Rgy = calculate_Rg2y(d,tw,r,h,b,tf)  !Radius of Gyration Y
+        Rg = calculate_Rg2(d,tw,r,h,b,tf)  !Radius of Gyration
         SMx = calculate_SMx2(d,tw,r,h,b,tf)  !Section Modulus x
         SMz = calculate_SMz2(d,tw,r,h,b,tf)  !Section Modulus y
         Cx = calculate_Cx2(d,tw,r,h,b,tf)  !Centroid X
@@ -95,7 +97,6 @@
         read(*,*)
         go to 100
         end if
-
 
         ! print the results
         write(*,40)
@@ -132,7 +133,6 @@
         write(*,*) "Invalid choice"
         go to 200
         end if
-
 
 
       contains
@@ -233,6 +233,7 @@
         real :: Cy2
         Cy2 = d/2
         end function calculate_Cy2
+        
         
       function calculate_Pmx2(d,tw,r,h,b,tf) result(Pmx2)
       real :: Pmx2

@@ -1,5 +1,10 @@
 app.exe
 main.py
 .f95
-.exe
+*.exe
 .xlsx
+
+/.vs
+app.~f
+~app.f
+fort.10
