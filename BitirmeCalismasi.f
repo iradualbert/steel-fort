@@ -40,24 +40,28 @@
         close(81)
 
 100     write(*,6)
+        profileType = ""
+        input = ""
 6       format(////,16x, "Please insert the name of the steel profile.")
         write(*,7)
-7       format(/,16x, "Or type INPUT/COMPOUND to enter measurements")
+7       format(/,16x, "Or type INPUT/COMPOSITE to enter measurements")
         read(*,*)input
 
         if(input .eq. "INPUT" .or. input .eq. "input") then
            call get_measurement_from_the_user
-        elseif(input .eq. "COMPOUND" .or. input .eq. "compound") then
-        open(92, file="Steel Sections Area-Inertia.csv", status="old")
+        elseif(input .eq. "COMPOSITE" .or. input .eq. "composite") then
+        open(92, file="Steel Sections I.csv", status="old")
         read(92, *)  ! read and skip the header
+        open(105, file="Steel Sections C.csv", status="old")
+        read(105, *)  ! read and skip the header
         write(*,91)
-91      format(/,16x, "Please choose the first compound section")
+91      format(/,16x, "Please choose the I composite section")
         read(*,*)nameH
         write(*,82)
-82      format(/,16x, "Please choose the second compound section")
+82      format(/,16x, "Please choose the C composite section")
         read(*,*)nameU
          do i=1,7
-           read(92, *)Name1,A1,Ixx1,Iyy1,b,d,Name2,A2,Ixx2,Iyy2,cy
+           read(92, *)Name1,A1,Ixx1,Iyy1,b,d
 c          profileType1 = Name1(1:1)
 c          profileType2 = Name2(1:1)
            if(trim(nameH) .eq. trim(Name1)) then
@@ -66,6 +70,16 @@ c          profileType2 = Name2(1:1)
            end if
         end do
         close(92) ! always close the file
+         do i=1,7
+           read(105, *)Name2,A2,Ixx2,Iyy2,cyy
+c          profileType1 = Name1(1:1)
+c          profileType2 = Name2(1:1)
+           if(trim(nameU) .eq. trim(Name2)) then
+           isFound = .true.
+           exit ! exit the loop if the the profile is found
+           end if
+        end do
+        close(105) ! always close the file
         else
         open(10, file="Steel Sections.csv", status="old")
         read(10, *)  ! read and skip the header
@@ -109,11 +123,13 @@ c          profileType2 = Name2(1:1)
         Cx = calculate_Cx2(d,tw,r,h,b,tf)  !Centroid X
         Cy = calculate_Cy2(d,tw,r,h,b,tf)  !Centroid y
        Pmx = calculate_Pmx2(d,tw,r,h,b,tf)
-       elseif (input .eq. "COMPOUND" .or. input .eq. "compound") then
+       elseif (input .eq. "COMPOSITE" .or. input .eq. "composite") then
        xcc = calculate_xc(b)
-       ycc = calculate_yc(A1,d,A2,cy)
-       ixx = calculate_Ix(Ixx1,A1,Ixx2,cy,d)
+       ycc = calculate_yc(A1,d,A2,cyy)
+       ixx = calculate_Ix(Ixx1,A1,Ixx2,cyy,d)
        iyy = calculate_Iy(Iyy1,A1,Iyy2,A2)
+       SMx = calculate_Smx3(ixx,cyy,d,b)
+       SMz = calculate_Smz3(iyy,b)
        
        
         else
@@ -153,9 +169,13 @@ c          profileType2 = Name2(1:1)
         write(*,96) ycc
   96    format(/,"Centroid Y =",12x,f15.2,2x, " mm")
         write(*,97) ixx
-  97    format(/,"Ixx =",18x,f15.2,2x, " mm^4")
+  97    format(/,"Ixx =",19x,f15.2,2x, " mm^4")
         write(*,98) iyy
-  98    format(/,"Iyy =",18x,f15.2,2x, " mm^4")
+  98    format(/,"Iyy =",19x,f15.2,2x, " mm^4")
+        write(*,99) Smx
+  99    format(/,"Section Modulus X =",5x,f15.2,2x, " mm^3")
+        write(*,101) Smz
+  101   format(/,"Section Modulus Y =",5x,f15.2,2x, " mm^3")
         end if
 
   200   write(*,32)
@@ -182,7 +202,7 @@ c          profileType2 = Name2(1:1)
 
       function calculate_Az(d,tw,r,h,b,tf) result(Az)   !Izz
       real :: Az
-      Az = (h*tw**3)/12 + 2*((tf*b**3)/12.0)
+      Az = (h*tw**3)/12 + 2*((tf*b**3)/12)
       end function calculate_Az
 
       function calculate_Area(d,tw,r,h,b,tf) result(Ar)          !Area
@@ -253,12 +273,12 @@ c          profileType2 = Name2(1:1)
 
         function calculate_SMx2(d,tw,r,h,b,tf) result(SMx2)
         real :: SMx2
-        SMx2 = X/(b/2)
+        SMx2 = Ixx/(d/2)
         end function calculate_SMx2
 
         function calculate_SMz2(d,tw,r,h,b,tf) result(SMz2)
         real :: SMz2
-        SMz2 = Z/(d/2)
+        SMz2 = Iyy/(b/2)
         end function calculate_SMz2
 
         function calculate_Cx2(d,tw,r,h,b,tf) result(Cx2)
@@ -282,20 +302,30 @@ c          profileType2 = Name2(1:1)
       xc = b/2
       end function calculate_xc
       
-      function calculate_yc(A1,d,A2,cy) result(yc)       !you need to fill out the J variable
+      function calculate_yc(A1,d,A2,cyy) result(yc)       !you need to fill out the J variable
       real :: yc
-      yc = (A1*(d/2) + A2*(d+cy))/(A1+A2)
+      yc = (A1*(d/2) + A2*(d+cyy))/(A1+A2)
       end function calculate_yc
       
-      function calculate_Ix(Ixx1,A1,Ixx2,cy,d) result(Ix)   !you need to fill the d variables
+      function calculate_Ix(Ixx1,A1,Ixx2,cyy,d) result(Ix)   !you need to fill the d variables
       real :: Ix
-      Ix = (Ixx1 + (A1*ABS(ycc-d/2)**2)) + (Ixx2 + (A2*ABS(ycc-cy)**2))
+      Ix = (Ixx1 + (A1*ABS(ycc-d/2)**2))+(Ixx2 + (A2*ABS(d-ycc+cyy)**2))
       end function calculate_Ix
       
       function calculate_Iy(Iyy1,A1,Iyy2,A2) result(Iy)
       real :: Iy
       Iy = (Iyy1 + (A1)) + (Iyy2 + A2)
       end function calculate_Iy
+      
+      function calculate_SMx3(ixx,cyy,d,b) result(SMx3)
+      real :: SMx3,ixx
+      SMx3 = ixx/MAX(ABS(cyy-(d+b)),cyy)
+      end function calculate_SMx3
+      
+      function calculate_SMz3(iyy,b) result(SMz3)          !Section Modulus z
+      real :: SMz3,iyy
+      SMz3 = iyy/(b/2)
+      end function calculate_SMz3
       
       
       
