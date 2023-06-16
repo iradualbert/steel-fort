@@ -71,7 +71,7 @@ c          profileType2 = Name2(1:1)
         end do
         close(92) ! always close the file
          do i=1,7
-           read(105, *)Name2,A2,Ixx2,Iyy2,cyy
+           read(105, *)Name2,A2,Ixx2,Iyy2,cyy,b1
 c          profileType1 = Name1(1:1)
 c          profileType2 = Name2(1:1)
            if(trim(nameU) .eq. trim(Name2)) then
@@ -126,9 +126,9 @@ c          profileType2 = Name2(1:1)
        elseif (input .eq. "COMPOSITE" .or. input .eq. "composite") then
        xcc = calculate_xc(b)
        ycc = calculate_yc(A1,d,A2,cyy)
-       ixx = calculate_Ix(Ixx1,A1,Ixx2,cyy,d)
-       iyy = calculate_Iy(Iyy1,A1,Iyy2,A2)
-       SMx = calculate_Smx3(ixx,cyy,d,b)
+       ixx = calculate_Ix(Ixx1,A1,Iyy2,cyy,d)
+       iyy = calculate_Iy(Iyy1,A1,Ixx2,A2)
+       SMx = calculate_Smx3(ixx,ycc,d,b1)
        SMz = calculate_Smz3(iyy,b)
        
        
@@ -177,7 +177,6 @@ c          profileType2 = Name2(1:1)
         write(*,101) Smz
   101   format(/,"Section Modulus Y =",5x,f15.2,2x, " mm^3")
         end if
-
   200   write(*,32)
   32    format(/,"Do you want to start again (Y/N):")
         read(*,*) startAgain
@@ -299,7 +298,7 @@ c          profileType2 = Name2(1:1)
       !! for composite shapes
       function calculate_xc(b) result(xc)
       real :: xc
-      xc = b/2
+      xc = MAX(d/2,b/2)
       end function calculate_xc
       
       function calculate_yc(A1,d,A2,cyy) result(yc)       !you need to fill out the J variable
@@ -307,24 +306,24 @@ c          profileType2 = Name2(1:1)
       yc = (A1*(d/2) + A2*(d+cyy))/(A1+A2)
       end function calculate_yc
       
-      function calculate_Ix(Ixx1,A1,Ixx2,cyy,d) result(Ix)   !you need to fill the d variables
+      function calculate_Ix(Ixx1,A1,Iyy2,cyy,d) result(Ix)
       real :: Ix
-      Ix = (Ixx1 + (A1*ABS(ycc-d/2)**2))+(Ixx2 + (A2*ABS(d-ycc+cyy)**2))
+      Ix = (Ixx1 + (A1*ABS(ycc-d/2)**2))+(Iyy2 + (A2*ABS(d-ycc+cyy)**2))
       end function calculate_Ix
       
-      function calculate_Iy(Iyy1,A1,Iyy2,A2) result(Iy)
+      function calculate_Iy(Iyy1,A1,Ixx2,A2) result(Iy)
       real :: Iy
-      Iy = (Iyy1 + (A1)) + (Iyy2 + A2)
+      Iy = (Iyy1) + (Ixx2)
       end function calculate_Iy
       
-      function calculate_SMx3(ixx,cyy,d,b) result(SMx3)
+      function calculate_SMx3(ixx,ycc,d,b1) result(SMx3)
       real :: SMx3,ixx
-      SMx3 = ixx/MAX(ABS(cyy-(d+b)),cyy)
+      SMx3 = ixx/MAX(ABS(ycc-(d+b1)),ycc)
       end function calculate_SMx3
       
       function calculate_SMz3(iyy,b) result(SMz3)          !Section Modulus z
       real :: SMz3,iyy
-      SMz3 = iyy/(b/2)
+      SMz3 = iyy/xcc
       end function calculate_SMz3
       
       
